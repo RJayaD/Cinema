@@ -35,88 +35,30 @@ public class PeliculaController {
     @GetMapping("movies")
     public ResponseEntity<?> showAll() {
         List<Pelicula> getList = _peliculaService.listAll();
-        if (getList == null) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje("No hay registros")
-                            .object(null)
-                            .build(),
-                    HttpStatus.OK);
-        }
-        return new ResponseEntity<>(
-                MensajeResponse.builder()
-                        .mensaje("")
-                        .object(getList)
-                        .build(), HttpStatus.OK);
+        return new ResponseEntity<>(getList, HttpStatus.OK);
     }
 
     
     @PostMapping("movie")
     public ResponseEntity<?> create(@RequestBody PeliculaDto peliculaDto) {
-
-        Pelicula _peliculaSave = null;
-        try {
-            _peliculaSave = _peliculaService.save(peliculaDto);
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje("Guardado exitosamente")
-                            .object(PeliculaDto.builder()
-                                    .idPelicula(_peliculaSave.getIdPelicula())
-                                    .nombre(_peliculaSave.getNombre())
-                                    .duracion(_peliculaSave.getDuracion())
-                                    .build())
-                            .build(),
-                    HttpStatus.CREATED);
-
-        } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje(exDt.getMessage())
-                            .object(null)
-                            .build(),
-                    HttpStatus.METHOD_NOT_ALLOWED);
-        }
+        return new ResponseEntity<>(_peliculaService.save(peliculaDto),HttpStatus.CREATED);
     }
     
     
     
     @DeleteMapping("movie/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
-        try {
             Pelicula peliculaDelete = _peliculaService.findById(id);
             _peliculaService.delete(peliculaDelete);
             return new ResponseEntity<>(peliculaDelete, HttpStatus.NO_CONTENT);
-        } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje(exDt.getMessage())
-                            .object(null)
-                            .build(),
-                    HttpStatus.METHOD_NOT_ALLOWED);
-        }
+       
 
     }
     
     @GetMapping("movie/{id}")
     public ResponseEntity<?> showById(@PathVariable Integer id) {
         Pelicula _cliente = _peliculaService.findById(id);
-        if (_cliente == null) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje("El registro no existe")
-                            .object(null)
-                            .build(),
-                    HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(
-                MensajeResponse.builder()
-                        .mensaje("")
-                        .object(PeliculaDto.builder()
-                                    .idPelicula(_cliente.getIdPelicula())
-                                    .nombre(_cliente.getNombre())
-                                    .duracion(_cliente.getDuracion())
-                                    .build())
-                        .build(), HttpStatus.OK);
+        return new ResponseEntity<>(_cliente,HttpStatus.OK);
     }
     
     

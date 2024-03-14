@@ -6,9 +6,13 @@ package com.cinema.service;
 
 import com.cinema.service.Interface.IPelicula;
 import com.cinema.entity.Pelicula;
+import com.cinema.exception.MyException;
+import com.cinema.helper.SchemaHelper;
 import com.cinema.repository.dao.PeliculaDao;
 import com.cinema.repository.PeliculaDto;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class PeliculaService implements IPelicula{
 
     @Autowired
+    private SchemaHelper schemaHelper;
+    
+    @Autowired
     private PeliculaDao _peliculaDao;
     
     @Transactional(readOnly = true)
@@ -32,7 +39,12 @@ public class PeliculaService implements IPelicula{
     @Transactional
     @Override
     public Pelicula save(PeliculaDto peliculaDto) {
-        Pelicula _pelicula = Pelicula.builder()
+        try {
+            this.schemaHelper.validateJsonSchmea("/schema/movie-schema.json", peliculaDto);
+        } catch (MyException ex) {
+            Logger.getLogger(PeliculaService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            Pelicula _pelicula = Pelicula.builder()
                 .idPelicula(peliculaDto.getIdPelicula())
                 .nombre(peliculaDto.getNombre())
                 .duracion(peliculaDto.getDuracion())
