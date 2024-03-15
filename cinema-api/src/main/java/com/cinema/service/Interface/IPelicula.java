@@ -16,11 +16,11 @@ public interface IPelicula {
     
     List<Pelicula> listAll();
     
-    Pelicula save(PeliculaDto peliculaDto);
+    PeliculaDto save(PeliculaDto peliculaDto);
     
-    Pelicula findById(Integer Id);
+    PeliculaDto findById(Integer Id);
     
-    void delete(Pelicula pelicula);
+    void delete(PeliculaDto peliculaDto);
     
     boolean existsById(Integer id);
     

@@ -7,10 +7,12 @@ package com.cinema.service;
 import com.cinema.service.Interface.IPelicula;
 import com.cinema.entity.Pelicula;
 import com.cinema.exception.MyException;
+import com.cinema.exception.ResourceNotFoundException;
 import com.cinema.helper.SchemaHelper;
 import com.cinema.repository.dao.PeliculaDao;
 import com.cinema.repository.PeliculaDto;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,51 +24,64 @@ import org.springframework.transaction.annotation.Transactional;
  * @author MALAGANA
  */
 @Service
-public class PeliculaService implements IPelicula{
+public class PeliculaService implements IPelicula {
+
 
     @Autowired
-    private SchemaHelper schemaHelper;
-    
-    @Autowired
     private PeliculaDao _peliculaDao;
-    
+
     @Transactional(readOnly = true)
     @Override
     public List<Pelicula> listAll() {
-         return (List) _peliculaDao.findAll();
+        return (List) _peliculaDao.findAll();
     }
-    
+
     @Transactional
     @Override
-    public Pelicula save(PeliculaDto peliculaDto) {
+    public PeliculaDto save(PeliculaDto peliculaDto) {
+        
+        Pelicula pelicula=null;
         try {
-            this.schemaHelper.validateJsonSchmea("/schema/movie-schema.json", peliculaDto);
-        } catch (MyException ex) {
-            Logger.getLogger(PeliculaService.class.getName()).log(Level.SEVERE, null, ex);
+             pelicula= _peliculaDao.save(Pelicula.builder()
+                    .idPelicula(peliculaDto.getIdPelicula())
+                    .nombre(peliculaDto.getNombre())
+                    .duracion(peliculaDto.getDuracion())
+                    .build());
+              peliculaDto.setIdPelicula(pelicula.getIdPelicula());
+            return peliculaDto;
+        } catch (Exception e) {
+            return null;
         }
-            Pelicula _pelicula = Pelicula.builder()
-                .idPelicula(peliculaDto.getIdPelicula())
-                .nombre(peliculaDto.getNombre())
-                .duracion(peliculaDto.getDuracion())
-                .build();
-        return _peliculaDao.save(_pelicula);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Pelicula findById(Integer Id) {
-        return _peliculaDao.findById(Id).orElse(null);
+    public PeliculaDto findById(Integer Id) {
+        Optional<Pelicula> Optional = _peliculaDao.findById(Id);
+        if (Optional.isPresent()) {
+            Pelicula pelicula = Optional.get();
+            return PeliculaDto.builder()
+                    .idPelicula(pelicula.getIdPelicula())
+                    .nombre(pelicula.getNombre())
+                    .duracion(pelicula.getDuracion())
+                    .build();
+        }
+        throw new ResourceNotFoundException("Pelicula not found with id: " + Id);
     }
 
     @Transactional
     @Override
-    public void delete(Pelicula pelicula) {
-        _peliculaDao.delete(pelicula);
+    public void delete(PeliculaDto peliculaDto) {
+        _peliculaDao.delete(Pelicula.builder()
+                    .idPelicula(peliculaDto.getIdPelicula())
+                    .nombre(peliculaDto.getNombre())
+                    .duracion(peliculaDto.getDuracion())
+                    .build());
     }
-    
-     @Override
+
+    @Override
     public boolean existsById(Integer id) {
         return _peliculaDao.existsById(id);
     }
-    
+
 }

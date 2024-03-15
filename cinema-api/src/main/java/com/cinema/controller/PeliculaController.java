@@ -7,6 +7,8 @@ package com.cinema.controller;
 import com.cinema.service.Interface.IPelicula;
 import com.cinema.entity.Pelicula;
 import com.cinema.repository.PeliculaDto;
+import com.cinema.response.ResponseHandler;
+import com.cinema.service.PeliculaService;
 import com.cinema.utilities.MensajeResponse;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeliculaController {
 
     @Autowired(required = true)
-    private IPelicula _peliculaService;
+    private PeliculaService _peliculaService;
 
     @GetMapping("movies")
     public ResponseEntity<?> showAll() {
@@ -41,24 +43,30 @@ public class PeliculaController {
     
     @PostMapping("movie")
     public ResponseEntity<?> create(@RequestBody PeliculaDto peliculaDto) {
-        return new ResponseEntity<>(_peliculaService.save(peliculaDto),HttpStatus.CREATED);
+         PeliculaDto pelicula=  _peliculaService.save(peliculaDto);
+        return ResponseHandler.generateResponse(pelicula, HttpStatus.CREATED);
     }
     
     
     
     @DeleteMapping("movie/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
-            Pelicula peliculaDelete = _peliculaService.findById(id);
+            PeliculaDto peliculaDelete = _peliculaService.findById(id);
             _peliculaService.delete(peliculaDelete);
-            return new ResponseEntity<>(peliculaDelete, HttpStatus.NO_CONTENT);
+            return ResponseHandler.generateResponse(null, HttpStatus.NO_CONTENT);
        
 
     }
     
     @GetMapping("movie/{id}")
     public ResponseEntity<?> showById(@PathVariable Integer id) {
-        Pelicula _cliente = _peliculaService.findById(id);
-        return new ResponseEntity<>(_cliente,HttpStatus.OK);
+        PeliculaDto _peliculaDto = _peliculaService.findById(id);
+        if (_peliculaDto != null) {
+            return ResponseHandler.generateResponse(_peliculaDto, HttpStatus.OK);
+        } else {
+            return ResponseHandler.generateError(HttpStatus.NOT_FOUND, "Pelicula not found with id: " + id);
+        }
+       
     }
     
     
